@@ -153,6 +153,23 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 			if (!hasBrowse) {
 				browse.setVisible(false);
 			}
+			
+			browse.addSelectionListener(Listeners.selection((e) -> {
+				FileDialog fd = new FileDialog(getShell(), SWT.OPEN);
+				fd.setText("Select file");
+				String selectedFilename = fd.open();
+				if (selectedFilename != null) {
+					value.setText(selectedFilename);
+				}
+			}));
+			
+			value.addModifyListener((e) -> {
+				updateView();
+			});
+		}
+		
+		boolean isValid() {
+			return !value.getText().isEmpty();
 		}
 	}
 
@@ -255,6 +272,22 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 			}
 		}));
 		
+		apkLocation.addModifyListener((e) -> {
+			for (PropertyLine propertyLine : mProperties.values()) {
+				propertyLine.value.setEnabled(true);
+				propertyLine.value.setText("modified");
+				propertyLine.browse.setEnabled(true);
+			}
+		});
+		
+		dirLocation.addModifyListener((e) -> {
+			for (PropertyLine propertyLine : mProperties.values()) {
+				propertyLine.value.setEnabled(true);
+				propertyLine.value.setText("modified");
+				propertyLine.browse.setEnabled(true);
+			}
+		});
+		
 		return container;
 	}
 
@@ -276,9 +309,23 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 	}
 
 	private void updateView() {
-		boolean isValid = isTestSubjectNameValid && (mApkSource.isValid() || mDirSource.isValid());
 		Button finishButton = getButton(IDialogConstants.FINISH_ID);
-		finishButton.setEnabled(isValid);
+		finishButton.setEnabled(isReadyToFinish());
+	}
+
+	private boolean isReadyToFinish() {
+		if (!isTestSubjectNameValid) {
+			return false;
+		}
+		if (!mApkSource.isValid() && !mDirSource.isValid()) {
+			return false;
+		}
+		for (PropertyLine propertyLine : mProperties.values()) {
+			if (!propertyLine.isValid()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 }
