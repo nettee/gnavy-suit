@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path=""/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="swt.jar" sourcepath="src.zip">
+		<attributes>
+			<attribute name="javadoc_location" value="http://help.eclipse.org/stable/nftopic/org.eclipse.platform.doc.isv/reference/api/"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="org.eclipse.swt"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="var" path="ECLIPSE_HOME/plugins/org.eclipse.core.commands_3.8.0.v20160316-1921.jar"/>
+	<classpathentry exported="true" kind="var" path="ECLIPSE_HOME/plugins/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
+	<classpathentry exported="true" kind="var" path="ECLIPSE_HOME/plugins/org.eclipse.jface_3.12.0.v20160518-1929.jar"/>
+	<classpathentry exported="true" kind="var" path="ECLIPSE_HOME/plugins/org.eclipse.osgi_3.11.0.v20160603-1336.jar"/>
+	<classpathentry exported="true" kind="var" path="ECLIPSE_HOME/plugins/org.eclipse.ui.workbench_3.108.0.v20160602-1232.jar"/>
+	<classpathentry kind="output" path=""/>
+</classpath>
