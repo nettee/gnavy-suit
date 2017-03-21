@@ -1,6 +1,8 @@
 package cn.edu.nju.cs.navydroid.gui;
 
 import java.io.File;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -19,13 +21,16 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import cn.edu.nju.cs.navydroid.gui.model.Property;
+
 public class NewTestSubjectDialog extends TitleAreaDialog {
 
-	private static final Point minSize = new Point(600, 500);
+	private static final Point minSize = new Point(600, 750);
 
 	private Text mTestSubjectName;
 	private SourceLine mApkSource;
 	private SourceLine mDirSource;
+	private Map<Integer, PropertyLine> mProperties;
 
 	private boolean isTestSubjectNameValid = false;
 
@@ -124,6 +129,32 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 		}
 	}
 
+	class PropertyLine {
+		
+		Label label;
+		Text value;
+		Button browse;
+		
+		public PropertyLine(Composite parent, String labelText, boolean hasBrowse) {
+			label = new Label(parent, SWT.NONE);
+			value = new Text(parent, SWT.NONE);
+			browse = new Button(parent, SWT.PUSH);
+			
+			label.setText(labelText);
+			browse.setText("Browse...");
+			
+			label.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+			value.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+			browse.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+			
+			value.setEnabled(false);
+			browse.setEnabled(false);
+			
+			if (!hasBrowse) {
+				browse.setVisible(false);
+			}
+		}
+	}
 
 	@Override
 	protected Control createDialogArea(Composite parent) {
@@ -165,6 +196,23 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 		Group properties = new Group(container, SWT.NONE);
 		properties.setText("Properties");
 		properties.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		properties.setLayout(new GridLayout(3, false));
+		
+		mProperties = new LinkedHashMap<Integer, PropertyLine>() {
+			private static final long serialVersionUID = 1L;
+			{
+				put(Property.SOURCEPATH, new PropertyLine(properties, "Sourcepath:", true));
+				put(Property.CLASSPATH, new PropertyLine(properties, "Classpath", true));
+				put(Property.ENTRY_ACTIVITY, new PropertyLine(properties, "Entry activity", false));
+				put(Property.R_ID_CLASS, new PropertyLine(properties, "R.id class", false));
+				put(Property.R_LAYOUT_CLASS, new PropertyLine(properties, "R.layout class", false));
+				put(Property.PACKAGE_NAME, new PropertyLine(properties, "Package name", false));
+				put(Property.LAYOUT_DIRECTORY, new PropertyLine(properties, "Layout directory", true));
+				put(Property.STRINGS_XML_FILE, new PropertyLine(properties, "Strings XML file", true));
+				put(Property.MANIFEST_XML_FILE, new PropertyLine(properties, "Manifest XML file", true));
+				put(Property.OUTPUT_FILE, new PropertyLine(properties, "Output file", true));
+			}
+		};
 
 		mTestSubjectName.addFocusListener(Listeners.gainFocus((e) -> {
 			setMessage("Enter a test subject name.", IMessageProvider.INFORMATION);
@@ -206,7 +254,7 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 				dirLocation.setText(selectedPath);
 			}
 		}));
-
+		
 		return container;
 	}
 
