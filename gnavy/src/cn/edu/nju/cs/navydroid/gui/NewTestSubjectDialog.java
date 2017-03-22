@@ -25,7 +25,7 @@ import cn.edu.nju.cs.navydroid.gui.model.Property;
 
 public class NewTestSubjectDialog extends TitleAreaDialog {
 
-	private static final Point minSize = new Point(600, 750);
+	private static final Point minSize = new Point(800, 750);
 
 	private Text mTestSubjectName;
 	private SourceLine mApkSource;
@@ -131,11 +131,19 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 
 	class PropertyLine {
 		
+		static final int FILE = 0;
+		static final int DIRECTORY = 1;
+		static final int VALUE = 2;
+		
+		private int type;
+		private String defaultDirectoryPath;
+		
 		Label label;
 		Text value;
 		Button browse;
 		
-		public PropertyLine(Composite parent, String labelText, boolean hasBrowse) {
+		public PropertyLine(Composite parent, String labelText, int type) {
+			this.type = type;
 			label = new Label(parent, SWT.NONE);
 			value = new Text(parent, SWT.NONE);
 			browse = new Button(parent, SWT.PUSH);
@@ -149,23 +157,38 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 			
 			value.setEnabled(false);
 			browse.setEnabled(false);
-			
-			if (!hasBrowse) {
+
+			if (type == FILE) {
+				browse.addSelectionListener(Listeners.selection((e) -> {
+					FileDialog fd = new FileDialog(getShell(), SWT.OPEN);
+					fd.setFilterPath(defaultDirectoryPath);
+					fd.setText("Select file");
+					String selectedFilename = fd.open();
+					if (selectedFilename != null) {
+						value.setText(selectedFilename);
+					}
+				}));
+			} else if (type == DIRECTORY) {
+				browse.addSelectionListener(Listeners.selection((e) -> {
+					DirectoryDialog dd = new DirectoryDialog(getShell());
+					dd.setFilterPath(defaultDirectoryPath);
+					dd.setText("Select directory");
+					String selectedPath = dd.open();
+					if (selectedPath != null) {
+						value.setText(selectedPath);
+					}
+				}));
+			} else if (type == VALUE) {
 				browse.setVisible(false);
 			}
-			
-			browse.addSelectionListener(Listeners.selection((e) -> {
-				FileDialog fd = new FileDialog(getShell(), SWT.OPEN);
-				fd.setText("Select file");
-				String selectedFilename = fd.open();
-				if (selectedFilename != null) {
-					value.setText(selectedFilename);
-				}
-			}));
 			
 			value.addModifyListener((e) -> {
 				updateView();
 			});
+		}
+		
+		void setDefaultDirectory(String directoryPath) {
+			this.defaultDirectoryPath = directoryPath;
 		}
 		
 		boolean isValid() {
@@ -218,16 +241,16 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 		mProperties = new LinkedHashMap<Integer, PropertyLine>() {
 			private static final long serialVersionUID = 1L;
 			{
-				put(Property.SOURCEPATH, new PropertyLine(properties, "Sourcepath:", true));
-				put(Property.CLASSPATH, new PropertyLine(properties, "Classpath", true));
-				put(Property.ENTRY_ACTIVITY, new PropertyLine(properties, "Entry activity", false));
-				put(Property.R_ID_CLASS, new PropertyLine(properties, "R.id class", false));
-				put(Property.R_LAYOUT_CLASS, new PropertyLine(properties, "R.layout class", false));
-				put(Property.PACKAGE_NAME, new PropertyLine(properties, "Package name", false));
-				put(Property.LAYOUT_DIRECTORY, new PropertyLine(properties, "Layout directory", true));
-				put(Property.STRINGS_XML_FILE, new PropertyLine(properties, "Strings XML file", true));
-				put(Property.MANIFEST_XML_FILE, new PropertyLine(properties, "Manifest XML file", true));
-				put(Property.OUTPUT_FILE, new PropertyLine(properties, "Output file", true));
+				put(Property.SOURCEPATH, new PropertyLine(properties, "Sourcepath:", PropertyLine.DIRECTORY));
+				put(Property.CLASSPATH, new PropertyLine(properties, "Classpath", PropertyLine.DIRECTORY));
+				put(Property.ENTRY_ACTIVITY, new PropertyLine(properties, "Entry activity", PropertyLine.VALUE));
+				put(Property.R_ID_CLASS, new PropertyLine(properties, "R.id class", PropertyLine.VALUE));
+				put(Property.R_LAYOUT_CLASS, new PropertyLine(properties, "R.layout class", PropertyLine.VALUE));
+				put(Property.PACKAGE_NAME, new PropertyLine(properties, "Package name", PropertyLine.VALUE));
+				put(Property.LAYOUT_DIRECTORY, new PropertyLine(properties, "Layout directory", PropertyLine.DIRECTORY));
+				put(Property.STRINGS_XML_FILE, new PropertyLine(properties, "Strings XML file", PropertyLine.FILE));
+				put(Property.MANIFEST_XML_FILE, new PropertyLine(properties, "Manifest XML file", PropertyLine.FILE));
+				put(Property.OUTPUT_FILE, new PropertyLine(properties, "Output file", PropertyLine.FILE));
 			}
 		};
 
@@ -281,11 +304,20 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 		});
 		
 		dirLocation.addModifyListener((e) -> {
-			for (PropertyLine propertyLine : mProperties.values()) {
-				propertyLine.value.setEnabled(true);
-				propertyLine.value.setText("modified");
-				propertyLine.browse.setEnabled(true);
+			String directoryPath = dirLocation.getText();
+			if (directoryPath.isEmpty()) {
+				for (PropertyLine propertyLine : mProperties.values()) {
+					propertyLine.value.setEnabled(false);
+					propertyLine.browse.setEnabled(false);
+				}
+			} else {
+				for (PropertyLine propertyLine : mProperties.values()) {
+					propertyLine.value.setEnabled(true);
+					propertyLine.browse.setEnabled(true);
+					propertyLine.setDefaultDirectory(directoryPath);
+				}
 			}
+			
 		});
 		
 		return container;
