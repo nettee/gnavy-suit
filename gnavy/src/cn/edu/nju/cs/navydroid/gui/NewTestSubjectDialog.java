@@ -32,8 +32,6 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 	private SourceLine mDirSource;
 	private Map<Integer, PropertyLine> mProperties;
 
-	private boolean isTestSubjectNameValid = false;
-
 	public NewTestSubjectDialog(Shell parentShell) {
 		super(parentShell);
 	}
@@ -68,8 +66,14 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 		Button browse;
 
 		boolean hasError = false;
+		private String info;
+		private String failMessageForNoExist;
 
-		SourceLine(Composite parent, String text, boolean isDefault) {
+		SourceLine(Composite parent, String text, boolean isDefault, String info, String failMessageForNoExist) {
+			
+			this.info = info;
+			this.failMessageForNoExist = failMessageForNoExist;
+			
 			radio = new Button(parent, SWT.RADIO);
 			location = new Text(parent, SWT.NONE);
 			browse = new Button(parent, SWT.PUSH);
@@ -85,6 +89,13 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 			radio.setSelection(isDefault);
 			location.setEnabled(isDefault);
 			browse.setEnabled(isDefault);
+			
+			location.addFocusListener(Listeners.gainFocus((e) -> {
+				updateView();
+			}));
+			location.addModifyListener((e) -> {
+				updateView();
+			});
 		}
 
 		void addRadioSelectionListener(SourceLine... others) {
@@ -99,34 +110,23 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 			}));
 		}
 
-		void addMessages(String info, String failMessageForNoExist) {
-			location.addFocusListener(Listeners.gainFocus((e) -> {
-				checkText(info, failMessageForNoExist);
-				updateView();
-			}));
-			location.addModifyListener((e) -> {
-				checkText(info, failMessageForNoExist);
-				updateView();
-			});
-		}
-
-		private void checkText(String info, String failMessage) {
+		boolean checkValid() {
+			if (!radio.getSelection()) {
+				return false;
+			}
 			hasError = false;
 			String text = location.getText();
 			if (!text.isEmpty()) {
 				File file = new File(text);
 				if (!file.exists()) {
-					setMessage(failMessage, IMessageProvider.ERROR);
+					setMessage(failMessageForNoExist, IMessageProvider.ERROR);
 					hasError = true;
 				}
 			}
 			if (!hasError) {
 				setMessage(info, IMessageProvider.INFORMATION);
 			}
-		}
-
-		boolean isValid() {
-			return radio.getSelection() && !location.getText().isEmpty() && !hasError;
+			return !text.isEmpty() && !hasError;
 		}
 	}
 
@@ -136,6 +136,7 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 		static final int DIRECTORY = 1;
 		static final int VALUE = 2;
 		
+		private String propertyName;
 		private int type;
 		private String defaultDirectoryPath;
 		private boolean hasError = false;
@@ -144,14 +145,18 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 		Text value;
 		Button browse;
 		
-		public PropertyLine(Composite parent, String labelText, int type) {
+		public PropertyLine(Composite parent, String propertyName, int type) {
 			
 			this.type = type;
+			this.propertyName = propertyName;
 			
 			label = new Label(parent, SWT.NONE);
 			value = new Text(parent, SWT.NONE);
 			browse = new Button(parent, SWT.PUSH);
 			
+			String labelText = String.format("%c%s:", 
+					Character.toUpperCase(propertyName.charAt(0)),
+					propertyName.substring(1));
 			label.setText(labelText);
 			browse.setText("Browse...");
 			
@@ -187,45 +192,43 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 			}
 			
 			value.addFocusListener(Listeners.gainFocus((e) -> {
-				checkText();
 				updateView();
 			}));
 			
 			value.addModifyListener((e) -> {
-				checkText();
 				updateView();
 			});
-		}
-		
-		private void checkText() {
-			hasError = false;
-			String text = value.getText();
-			if (!text.isEmpty()) {
-				if (type == FILE) {
-					File file = new File(text);
-					if (!file.exists() || !file.isFile()) {
-						setMessage("Invalid file path", IMessageProvider.ERROR);
-						hasError = true;
-					}
-				} else if (type == DIRECTORY) {
-					File file = new File(text);
-					if (!file.exists() || !file.isDirectory()) {
-						setMessage("Invalid directory path", IMessageProvider.ERROR);
-						hasError = true;
-					}
-				}
-			}
-			if (!hasError) {
-				setMessage("Please enter the property.", IMessageProvider.INFORMATION);
-			}
 		}
 		
 		void setDefaultDirectory(String directoryPath) {
 			this.defaultDirectoryPath = directoryPath;
 		}
 		
-		boolean isValid() {
-			return !value.getText().isEmpty();
+		boolean checkValid() {
+			hasError = false;
+			String text = value.getText();
+			if (!text.isEmpty()) {
+				if (type == FILE) {
+					File file = new File(text);
+					if (!file.exists() || !file.isFile()) {
+						String msg = String.format("Invalid file path for %s.", propertyName);
+						setMessage(msg, IMessageProvider.ERROR);
+						hasError = true;
+					}
+				} else if (type == DIRECTORY) {
+					File file = new File(text);
+					if (!file.exists() || !file.isDirectory()) {
+						String msg = String.format("Invalid directory path for %s.", propertyName);
+						setMessage(msg, IMessageProvider.ERROR);
+						hasError = true;
+					}
+				}
+			}
+			if (!hasError) {
+				String msg = String.format("Enter the property %s.", propertyName);
+				setMessage(msg, IMessageProvider.INFORMATION);
+			}
+			return !text.isEmpty() && !hasError;
 		}
 	}
 
@@ -258,11 +261,11 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 		source.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		source.setLayout(new GridLayout(3, false));
 
-		mApkSource = new SourceLine(source, "Select an APK file:", true);
+		mApkSource = new SourceLine(source, "Select an APK file:", true, "Select an APK file.", "APK file does not exist.");
 		Text apkLocation = mApkSource.location;
 		Button apkBrowse = mApkSource.browse;
 
-		mDirSource = new SourceLine(source, "Select Android project:", false);
+		mDirSource = new SourceLine(source, "Select Android project:", false, "Select a project directory.", "Project directory does not exist.");
 		Text dirLocation = mDirSource.location;
 		Button dirBrowse = mDirSource.browse;
 
@@ -274,39 +277,31 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 		mProperties = new LinkedHashMap<Integer, PropertyLine>() {
 			private static final long serialVersionUID = 1L;
 			{
-				put(Property.SOURCEPATH, new PropertyLine(properties, "Sourcepath:", PropertyLine.DIRECTORY));
-				put(Property.CLASSPATH, new PropertyLine(properties, "Classpath", PropertyLine.DIRECTORY));
-				put(Property.ENTRY_ACTIVITY, new PropertyLine(properties, "Entry activity", PropertyLine.VALUE));
+				put(Property.SOURCEPATH, new PropertyLine(properties, "sourcepath", PropertyLine.DIRECTORY));
+				put(Property.CLASSPATH, new PropertyLine(properties, "classpath", PropertyLine.DIRECTORY));
+				put(Property.ENTRY_ACTIVITY, new PropertyLine(properties, "entry activity", PropertyLine.VALUE));
 				put(Property.R_ID_CLASS, new PropertyLine(properties, "R.id class", PropertyLine.VALUE));
 				put(Property.R_LAYOUT_CLASS, new PropertyLine(properties, "R.layout class", PropertyLine.VALUE));
-				put(Property.PACKAGE_NAME, new PropertyLine(properties, "Package name", PropertyLine.VALUE));
-				put(Property.LAYOUT_DIRECTORY, new PropertyLine(properties, "Layout directory", PropertyLine.DIRECTORY));
-				put(Property.STRINGS_XML_FILE, new PropertyLine(properties, "Strings XML file", PropertyLine.FILE));
-				put(Property.MANIFEST_XML_FILE, new PropertyLine(properties, "Manifest XML file", PropertyLine.FILE));
-				put(Property.OUTPUT_FILE, new PropertyLine(properties, "Output file", PropertyLine.FILE));
+				put(Property.PACKAGE_NAME, new PropertyLine(properties, "package name", PropertyLine.VALUE));
+				put(Property.LAYOUT_DIRECTORY, new PropertyLine(properties, "layout directory", PropertyLine.DIRECTORY));
+				put(Property.STRINGS_XML_FILE, new PropertyLine(properties, "strings XML file", PropertyLine.FILE));
+				put(Property.MANIFEST_XML_FILE, new PropertyLine(properties, "manifest XML file", PropertyLine.FILE));
+//				put(Property.OUTPUT_FILE, new PropertyLine(properties, "output file", PropertyLine.FILE));
 			}
 		};
 
 		mTestSubjectName.addFocusListener(Listeners.gainFocus((e) -> {
 			setMessage("Enter a test subject name.", IMessageProvider.INFORMATION);
+			updateView();
 		}));
 
 		mTestSubjectName.addModifyListener((e) -> {
-			isTestSubjectNameValid = true;
-			String testSubjectName = mTestSubjectName.getText();
-			if (testSubjectName.isEmpty()) {
-				setMessage("Test subject name is empty.", IMessageProvider.ERROR);
-				isTestSubjectNameValid = false;
-			}
-			// TODO examine whether the name is conflict with existing ones
+			setMessage("Enter a test subject name.", IMessageProvider.INFORMATION);
 			updateView();
 		});
 
 		mApkSource.addRadioSelectionListener(mDirSource);
 		mDirSource.addRadioSelectionListener(mApkSource);
-
-		mApkSource.addMessages("Select an APK file.", "APK file does not exist.");
-		mDirSource.addMessages("Select a project directory.", "Project directory does not exist.");
 
 		apkBrowse.addSelectionListener(Listeners.selection((e) -> {
 			FileDialog fd = new FileDialog(getShell(), SWT.OPEN);
@@ -374,18 +369,30 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 
 	private void updateView() {
 		Button finishButton = getButton(IDialogConstants.FINISH_ID);
-		finishButton.setEnabled(isReadyToFinish());
+		finishButton.setEnabled(checkReadyToFinish());
 	}
-
-	private boolean isReadyToFinish() {
+	
+	private boolean checkTestSubjectName() {
+		boolean isValid = true;
+		String testSubjectName = mTestSubjectName.getText();
+		// TODO examine whether the name is conflict with existing ones
+		if (testSubjectName.isEmpty()) {
+			setMessage("Test subject name is empty.", IMessageProvider.ERROR);
+			isValid = false;
+		}
+		return isValid;
+	}
+	
+	private boolean checkReadyToFinish() {
+		boolean isTestSubjectNameValid = checkTestSubjectName();
 		if (!isTestSubjectNameValid) {
 			return false;
 		}
-		if (!mApkSource.isValid() && !mDirSource.isValid()) {
+		if (!mApkSource.checkValid() && !mDirSource.checkValid()) {
 			return false;
 		}
 		for (PropertyLine propertyLine : mProperties.values()) {
-			if (!propertyLine.isValid()) {
+			if (!propertyLine.checkValid()) {
 				return false;
 			}
 		}
