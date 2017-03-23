@@ -113,14 +113,15 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 		private void checkText(String info, String failMessage) {
 			hasError = false;
 			String text = location.getText();
-			if (text.isEmpty()) {
-				setMessage(info, IMessageProvider.INFORMATION);
-			} else {
+			if (!text.isEmpty()) {
 				File file = new File(text);
 				if (!file.exists()) {
 					setMessage(failMessage, IMessageProvider.ERROR);
 					hasError = true;
 				}
+			}
+			if (!hasError) {
+				setMessage(info, IMessageProvider.INFORMATION);
 			}
 		}
 
@@ -137,13 +138,16 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 		
 		private int type;
 		private String defaultDirectoryPath;
+		private boolean hasError = false;
 		
 		Label label;
 		Text value;
 		Button browse;
 		
 		public PropertyLine(Composite parent, String labelText, int type) {
+			
 			this.type = type;
+			
 			label = new Label(parent, SWT.NONE);
 			value = new Text(parent, SWT.NONE);
 			browse = new Button(parent, SWT.PUSH);
@@ -182,9 +186,38 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 				browse.setVisible(false);
 			}
 			
+			value.addFocusListener(Listeners.gainFocus((e) -> {
+				checkText();
+				updateView();
+			}));
+			
 			value.addModifyListener((e) -> {
+				checkText();
 				updateView();
 			});
+		}
+		
+		private void checkText() {
+			hasError = false;
+			String text = value.getText();
+			if (!text.isEmpty()) {
+				if (type == FILE) {
+					File file = new File(text);
+					if (!file.exists() || !file.isFile()) {
+						setMessage("Invalid file path", IMessageProvider.ERROR);
+						hasError = true;
+					}
+				} else if (type == DIRECTORY) {
+					File file = new File(text);
+					if (!file.exists() || !file.isDirectory()) {
+						setMessage("Invalid directory path", IMessageProvider.ERROR);
+						hasError = true;
+					}
+				}
+			}
+			if (!hasError) {
+				setMessage("Please enter the property.", IMessageProvider.INFORMATION);
+			}
 		}
 		
 		void setDefaultDirectory(String directoryPath) {
@@ -317,7 +350,6 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 					propertyLine.setDefaultDirectory(directoryPath);
 				}
 			}
-			
 		});
 		
 		return container;
