@@ -3,6 +3,7 @@ package cn.edu.nju.cs.navydroid.gui;
 import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -25,7 +26,7 @@ import cn.edu.nju.cs.navydroid.gui.model.Property;
 
 public class NewTestSubjectDialog extends TitleAreaDialog {
 
-	private static final Point minSize = new Point(800, 750);
+	private static final Point minSize = new Point(700, 700);
 
 	private Text mTestSubjectName;
 	private SourceLine mApkSource;
@@ -339,8 +340,14 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 					propertyLine.browse.setEnabled(false);
 				}
 			} else {
-				for (PropertyLine propertyLine : mProperties.values()) {
+				Map<Integer, String> pmap = Property.infer(directoryPath);
+				for (Entry<Integer, PropertyLine> entry : mProperties.entrySet()) {
+					int key = entry.getKey();
+					PropertyLine propertyLine = entry.getValue();
 					propertyLine.value.setEnabled(true);
+					if (pmap.containsKey(key)) {
+						propertyLine.value.setText(pmap.get(key));
+					}
 					propertyLine.browse.setEnabled(true);
 					propertyLine.setDefaultDirectory(directoryPath);
 				}
@@ -352,12 +359,8 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 
 	@Override
 	protected void createButtonsForButtonBar(Composite parent) {
-//		Button backButton = createButton(parent, IDialogConstants.BACK_ID, "<Back", false);
-//		Button nextButton = createButton(parent, IDialogConstants.NEXT_ID, "Next>", false);
 		createButton(parent, IDialogConstants.CANCEL_ID, "Cancel", false);
 		Button finishButton = createButton(parent, IDialogConstants.FINISH_ID, "Finish", true);
-//		backButton.setEnabled(false);
-//		nextButton.setEnabled(false);
 		finishButton.setEnabled(false);
 	}
 
