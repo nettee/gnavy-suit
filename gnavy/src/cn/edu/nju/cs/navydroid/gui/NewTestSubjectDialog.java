@@ -22,7 +22,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import cn.edu.nju.cs.navydroid.gui.model.Property;
+import cn.edu.nju.cs.navydroid.gui.model.Properties;
+import cn.edu.nju.cs.navydroid.gui.model.TestSubject;
 
 public class NewTestSubjectDialog extends TitleAreaDialog {
 
@@ -32,6 +33,8 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 	private SourceLine mApkSource;
 	private SourceLine mDirSource;
 	private Map<Integer, PropertyLine> mProperties;
+
+	private TestSubject mTestSubject;
 
 	public NewTestSubjectDialog(Shell parentShell) {
 		super(parentShell);
@@ -278,15 +281,15 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 		mProperties = new LinkedHashMap<Integer, PropertyLine>() {
 			private static final long serialVersionUID = 1L;
 			{
-				put(Property.SOURCEPATH, new PropertyLine(properties, "sourcepath", PropertyLine.DIRECTORY));
-				put(Property.CLASSPATH, new PropertyLine(properties, "classpath", PropertyLine.DIRECTORY));
-				put(Property.ENTRY_ACTIVITY, new PropertyLine(properties, "entry activity", PropertyLine.VALUE));
-				put(Property.R_ID_CLASS, new PropertyLine(properties, "R.id class", PropertyLine.VALUE));
-				put(Property.R_LAYOUT_CLASS, new PropertyLine(properties, "R.layout class", PropertyLine.VALUE));
-				put(Property.PACKAGE_NAME, new PropertyLine(properties, "package name", PropertyLine.VALUE));
-				put(Property.LAYOUT_DIRECTORY, new PropertyLine(properties, "layout directory", PropertyLine.DIRECTORY));
-				put(Property.STRINGS_XML_FILE, new PropertyLine(properties, "strings XML file", PropertyLine.FILE));
-				put(Property.MANIFEST_XML_FILE, new PropertyLine(properties, "manifest XML file", PropertyLine.FILE));
+				put(Properties.SOURCEPATH, new PropertyLine(properties, "sourcepath", PropertyLine.DIRECTORY));
+				put(Properties.CLASSPATH, new PropertyLine(properties, "classpath", PropertyLine.DIRECTORY));
+				put(Properties.ENTRY_ACTIVITY, new PropertyLine(properties, "entry activity", PropertyLine.VALUE));
+				put(Properties.R_ID_CLASS, new PropertyLine(properties, "R.id class", PropertyLine.VALUE));
+				put(Properties.R_LAYOUT_CLASS, new PropertyLine(properties, "R.layout class", PropertyLine.VALUE));
+				put(Properties.PACKAGE_NAME, new PropertyLine(properties, "package name", PropertyLine.VALUE));
+				put(Properties.LAYOUT_DIRECTORY, new PropertyLine(properties, "layout directory", PropertyLine.DIRECTORY));
+				put(Properties.STRINGS_XML_FILE, new PropertyLine(properties, "strings XML file", PropertyLine.FILE));
+				put(Properties.MANIFEST_XML_FILE, new PropertyLine(properties, "manifest XML file", PropertyLine.FILE));
 //				put(Property.OUTPUT_FILE, new PropertyLine(properties, "output file", PropertyLine.FILE));
 			}
 		};
@@ -340,7 +343,7 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 					propertyLine.browse.setEnabled(false);
 				}
 			} else {
-				Map<Integer, String> pmap = Property.infer(directoryPath);
+				Map<Integer, String> pmap = Properties.infer(directoryPath);
 				for (Entry<Integer, PropertyLine> entry : mProperties.entrySet()) {
 					int key = entry.getKey();
 					PropertyLine propertyLine = entry.getValue();
@@ -366,6 +369,9 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 
 	@Override
 	protected void buttonPressed(int buttonId) {
+		if (buttonId == IDialogConstants.FINISH_ID) {
+			saveTestSubject();
+		}
 		setReturnCode(buttonId);
 		close();
 	}
@@ -400,6 +406,28 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 			}
 		}
 		return true;
+	}
+	
+	private void saveTestSubject() {
+		TestSubject ts = new TestSubject();
+		ts.setName(mTestSubjectName.getText());
+		if (mApkSource.radio.getEnabled()) {
+			ts.setSourceType(TestSubject.SOURCE_APK);
+			ts.setSourcePath(mApkSource.location.getText());
+		} else {
+			ts.setSourceType(TestSubject.SOURCE_DIRECTORY);
+			ts.setSourcePath(mDirSource.location.getText());
+		}
+		for (Entry<Integer, PropertyLine> entry : mProperties.entrySet()) {
+			int key = entry.getKey();
+			PropertyLine propertyLine = entry.getValue();
+			ts.addProperty(key, propertyLine.value.getText());
+		}
+		mTestSubject = ts;
+	}
+	
+	public TestSubject getTestSubject() {
+		return mTestSubject;
 	}
 
 }

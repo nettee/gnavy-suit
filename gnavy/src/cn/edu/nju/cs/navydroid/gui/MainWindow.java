@@ -19,6 +19,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 
+import cn.edu.nju.cs.navydroid.gui.model.TestSubject;
+import cn.edu.nju.cs.navydroid.gui.model.TestSubjectManager;
+
 public class MainWindow extends ApplicationWindow {
 
 	private static final Point minSize = new Point(1000, 700);
@@ -78,9 +81,6 @@ public class MainWindow extends ApplicationWindow {
 		leftArea.setLayout(new FillLayout());
 
 		mAppList = new List(leftArea, SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
-		for (int i = 0; i < 50; i++) {
-			mAppList.add("Item " + (i + 1));
-		}
 
 		Composite rightArea = new Composite(content, SWT.NONE);
 		rightArea.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -123,8 +123,11 @@ public class MainWindow extends ApplicationWindow {
 			NewTestSubjectDialog newTestSubjectDialog = new NewTestSubjectDialog(getShell());
 			newTestSubjectDialog.setBlockOnOpen(true);
 			int returnCode = newTestSubjectDialog.open();
-			if (returnCode == IDialogConstants.NEXT_ID) {
-				System.out.println("Next clicked");
+			if (returnCode == IDialogConstants.FINISH_ID) {
+				TestSubject testSubject = newTestSubjectDialog.getTestSubject();
+				TestSubjectManager tsm = TestSubjectManager.getInstance();
+				tsm.addTestSubject(testSubject);
+				updateView();
 			}
 		}
 	}
@@ -151,6 +154,17 @@ public class MainWindow extends ApplicationWindow {
 		@Override
 		public void run() {
 			// TODO
+		}
+	}
+	
+	private void updateView() {
+		mAppList.removeAll();
+		TestSubjectManager tsm = TestSubjectManager.getInstance();
+		for (TestSubject ts : tsm.getTestSubjects()) {
+			mAppList.add(ts.getName());
+		}
+		for (int i = 0; i < 50; i++) {
+			mAppList.add("Item " + (i + 1));
 		}
 	}
 

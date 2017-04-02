@@ -15,7 +15,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-public class Property {
+public class Properties {
 
 	public static final int SOURCEPATH = 0;
 	public static final int CLASSPATH = 1;
@@ -57,7 +57,6 @@ public class Property {
 	};
 	
 	public static Map<Integer, String> infer(String projectPath) {
-		System.out.println("infer " + projectPath);
 		Map<Integer, String> properties = inferFromFilename(projectPath);
 		String manifestPath = properties.get(MANIFEST_XML_FILE);
 		if (manifestPath != null) {
