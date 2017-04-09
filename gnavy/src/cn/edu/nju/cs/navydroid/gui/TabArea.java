@@ -2,14 +2,11 @@ package cn.edu.nju.cs.navydroid.gui;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Text;
@@ -32,14 +29,9 @@ public class TabArea extends Composite {
 		layout.horizontalSpacing = 20;
 		infoArea.setLayout(layout);
 		
-		
 		Label label = new Label(infoArea, SWT.NONE);
 		label.setText("Location");
-		
-		// set bold font (verbose...)
-		FontData fd = label.getFont().getFontData()[0];
-		Font f = new Font(Display.getDefault(), new FontData(fd.getName(), fd.getHeight(), SWT.BOLD));
-		label.setFont(f);
+		Labels.setFontStyle(label, SWT.BOLD);
 		
 		new Label(infoArea, SWT.NONE).setText(location);
 		

@@ -89,29 +89,30 @@ public class MainWindow extends ApplicationWindow {
 		layout.marginHeight = 0;
 		leftArea.setLayout(layout);
 		
-		Label appListLabel = new Label(leftArea, SWT.NONE);
-		appListLabel.setText("Test Subjects");
-		appListLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING));
+		Label testSubjectListLabel = new Label(leftArea, SWT.NONE);
+		testSubjectListLabel.setText("  Test Subjects");
+		Labels.setFontStyle(testSubjectListLabel, SWT.BOLD); 
+		testSubjectListLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING));
 
 		mTestSubjectList = new List(leftArea, SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
 		mTestSubjectList.setLayoutData(new GridData(GridData.FILL_BOTH));
 		
-		Composite appListButtonArea = new Composite(leftArea, SWT.NONE);
-		appListButtonArea.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING));
+		Composite testSubjectListButtonArea = new Composite(leftArea, SWT.NONE);
+		testSubjectListButtonArea.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING));
 		RowLayout rowLayout = new RowLayout();
 		rowLayout.marginLeft = 0;
 		rowLayout.marginRight = 0;
 		rowLayout.pack = false; // all widgets have the same size
-		appListButtonArea.setLayout(rowLayout);
+		testSubjectListButtonArea.setLayout(rowLayout);
 		
-		Button addTestSubjectButton = new Button(appListButtonArea, SWT.PUSH);
+		Button addTestSubjectButton = new Button(testSubjectListButtonArea, SWT.PUSH);
 		addTestSubjectButton.setText("Add...");
 		addTestSubjectButton.addSelectionListener(Listeners.selection((e) -> {
 			Action newTestSubject = new NewTestSubject();
 			newTestSubject.run();
 		}));
 		
-		Button delTestSubjectButton = new Button(appListButtonArea, SWT.PUSH);
+		Button delTestSubjectButton = new Button(testSubjectListButtonArea, SWT.PUSH);
 		delTestSubjectButton.setText("Delete");
 
 		Composite rightArea = new Composite(content, SWT.NONE);
@@ -126,12 +127,7 @@ public class MainWindow extends ApplicationWindow {
 
 		CTabItem welcomeTab = new CTabItem(mTabFolder, SWT.NONE);
 		welcomeTab.setText("Welcome");
-		Composite welcomeArea = new Composite(mTabFolder, SWT.NONE);
-		welcomeTab.setControl(welcomeArea);
-
-		welcomeArea.setLayout(new RowLayout());
-		Button button2 = new Button(welcomeArea, SWT.PUSH);
-		button2.setText("welcome!");
+		welcomeTab.setControl(new WelcomeTabArea(mTabFolder));
 		
 		mTabFolder.setSelection(welcomeTab);
 
