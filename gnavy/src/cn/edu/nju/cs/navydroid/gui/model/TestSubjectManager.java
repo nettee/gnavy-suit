@@ -1,13 +1,13 @@
 package cn.edu.nju.cs.navydroid.gui.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TestSubjectManager {
 	
 	private static TestSubjectManager instance = null;
 	
-	private List<TestSubject> testSubjects = new ArrayList<>();
+	private Map<String, TestSubject> testSubjectMap = new HashMap<>();
 	
 	public static TestSubjectManager getInstance() {
 		if (instance == null) {
@@ -21,11 +21,15 @@ public class TestSubjectManager {
 	}
 	
 	public void addTestSubject(TestSubject testSubject) {
-		testSubjects.add(testSubject);
+		testSubjectMap.put(testSubject.getName(), testSubject);
+	}
+	
+	public TestSubject getTestSubject(String name) {
+		return testSubjectMap.get(name);
 	}
 	
 	public Iterable<TestSubject> getTestSubjects() {
-		return testSubjects;
+		return testSubjectMap.values();
 	}
 
 }
