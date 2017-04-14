@@ -135,9 +135,15 @@ public class MainWindow extends ApplicationWindow {
 			int index = mTestSubjectList.getSelectionIndex();
 			String testSubjectName = mTestSubjectList.getItem(index);
 			
+			TestSubject ts = tsm.getTestSubject(testSubjectName);
+			if (ts == null) {
+				System.err.printf("Error: test subject %s not found\n", testSubjectName);
+				return;
+			}
+			
 			CTabItem tab = new CTabItem(mTabFolder, SWT.NONE);
 			tab.setText(testSubjectName);
-			tab.setControl(new TabArea(mTabFolder, "/fakepath/"));
+			tab.setControl(new TabArea(mTabFolder, ts.getSourcePath()));
 			mTabFolder.setSelection(tab);
 		}));
 
@@ -193,55 +199,6 @@ public class MainWindow extends ApplicationWindow {
 		for (TestSubject ts : tsm.getTestSubjects()) {
 			mTestSubjectList.add(ts.getName());
 		}
-//		for (int i = 0; i < 50; i++) {
-//			mAppList.add("Item " + (i + 1));
-//		}
 	}
 
 }
-
-class IncreaseOperator implements Runnable {  
-    private ProgressBar bar;  
-    IncreaseOperator(ProgressBar bar) {  
-        this.bar = bar;  
-    }  
-    @Override
-    public void run() {  
-        Display.getDefault().syncExec(new Runnable() {  
-            public void run() {  
-                if (bar.isDisposed()) {
-                    return;  
-                }
-                if (bar.getSelection() < bar.getMaximum()) {
-                	bar.setSelection(bar.getSelection() + 1);
-                }
-            }  
-        });  
-    }  
-}  
-
-class IncreasingOperator extends Thread {
-    private ProgressBar bar;  
-    private int minimum;
-    private int maximum;
-    IncreasingOperator(ProgressBar bar) {  
-        this.bar = bar;
-        this.minimum = bar.getMinimum();
-        this.maximum = bar.getMaximum();
-    }  
-    public void run() {
-    	while (true) {
-    		Display.getDefault().asyncExec(() -> {
-    			if (bar.isDisposed())  
-					return;  
-    			int next = bar.getSelection() == maximum ? minimum : bar.getSelection() + 1;
-    			bar.setSelection(next);
-    		});
-    		try {  
-    			Thread.sleep(100);  
-    		} catch (InterruptedException e) {  
-    			e.printStackTrace();  
-    		}  
-        } 
-    }  
-}  

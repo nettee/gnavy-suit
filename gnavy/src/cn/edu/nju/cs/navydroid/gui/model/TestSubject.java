@@ -44,5 +44,10 @@ public class TestSubject {
 	public Map<Integer, String> getProperties() {
 		return properties;
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("TestSubject{name=%s, type=%d, location=%s}", name, sourceType, sourcePath);
+	}
 
 }

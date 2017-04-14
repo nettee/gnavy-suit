@@ -411,7 +411,7 @@ public class NewTestSubjectDialog extends TitleAreaDialog {
 	private void saveTestSubject() {
 		TestSubject ts = new TestSubject();
 		ts.setName(mTestSubjectName.getText());
-		if (mApkSource.radio.getEnabled()) {
+		if (mApkSource.radio.getSelection()) {
 			ts.setSourceType(TestSubject.SOURCE_APK);
 			ts.setSourcePath(mApkSource.location.getText());
 		} else {
