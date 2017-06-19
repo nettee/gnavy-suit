@@ -99,13 +99,12 @@ public class MainWindow extends ApplicationWindow {
 		
 		Composite testSubjectListButtonArea = new Composite(leftArea, SWT.NONE);
 		testSubjectListButtonArea.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING));
-		RowLayout rowLayout = new RowLayout();
-		rowLayout.marginLeft = 0;
-		rowLayout.marginRight = 0;
-		rowLayout.pack = false; // all widgets have the same size
-		testSubjectListButtonArea.setLayout(rowLayout);
+		GridLayout testSubjectListButtonAreaGridLayout = new GridLayout(2, false);
+		testSubjectListButtonAreaGridLayout.marginHeight = 0;
+		testSubjectListButtonArea.setLayout(testSubjectListButtonAreaGridLayout);
 		
 		Button addTestSubjectButton = new Button(testSubjectListButtonArea, SWT.PUSH);
+		addTestSubjectButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER));
 		addTestSubjectButton.setText("Add...");
 		addTestSubjectButton.addSelectionListener(Listeners.selection((e) -> {
 			Action newTestSubject = new NewTestSubject();
@@ -113,6 +112,7 @@ public class MainWindow extends ApplicationWindow {
 		}));
 		
 		Button delTestSubjectButton = new Button(testSubjectListButtonArea, SWT.PUSH);
+		delTestSubjectButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER));
 		delTestSubjectButton.setText("Delete");
 
 		Composite rightArea = new Composite(content, SWT.NONE);
@@ -143,7 +143,7 @@ public class MainWindow extends ApplicationWindow {
 			
 			CTabItem tab = new CTabItem(mTabFolder, SWT.NONE);
 			tab.setText(testSubjectName);
-			tab.setControl(new TabArea(mTabFolder, ts.getSourcePath()));
+			tab.setControl(new TabArea(mTabFolder, ts));
 			mTabFolder.setSelection(tab);
 		}));
 

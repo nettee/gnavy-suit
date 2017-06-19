@@ -1,8 +1,11 @@
 package cn.edu.nju.cs.navydroid.gui.model;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
@@ -27,32 +30,43 @@ public class Properties {
 	public static final int STRINGS_XML_FILE = 7;
 	public static final int MANIFEST_XML_FILE = 8;
 	public static final int OUTPUT_FILE = 9;
-	
+	public static final int STYLE_XML_FILE = 10;
+
 	private static final Map<Integer, Predicate<File>> filters = new HashMap<Integer, Predicate<File>>() {
 		private static final long serialVersionUID = 1L;
 		{
 			put(SOURCEPATH, (f) -> {
-				return f.isDirectory() 
-						&& f.getName().equals("src");
+				return f.isDirectory() && f.getName().equals("src");
 			});
 			put(CLASSPATH, (f) -> {
-				return f.isDirectory() 
-						&& f.getName().equals("classes") 
-						&& f.getParentFile().getName().equals("bin");
+				return f.isDirectory() && f.getName().equals("classes") && f.getParentFile().getName().equals("bin");
 			});
 			put(LAYOUT_DIRECTORY, (f) -> {
-				return f.isDirectory()
-						&& f.getName().equals("layout");
+				return f.isDirectory() && f.getName().equals("layout");
 			});
 			put(STRINGS_XML_FILE, (f) -> {
-				return f.isFile()
-						&& f.getName().equals("strings.xml")
-						&& f.getParentFile().getName().equals("values");
+				return f.isFile() && f.getName().equals("strings.xml") && f.getParentFile().getName().equals("values");
 			});
 			put(MANIFEST_XML_FILE, (f) -> {
-				return f.isFile()
-						&& f.getName().equals("AndroidManifest.xml");
+				return f.isFile() && f.getName().equals("AndroidManifest.xml");
 			});
+		}
+	};
+	
+	private static final Map<Integer, String> outputKeys = new LinkedHashMap<Integer, String>() {
+		private static final long serialVersionUID = 1L;
+		{
+			put(ENTRY_ACTIVITY, "entry");
+			put(R_ID_CLASS, "R.id");
+			put(R_LAYOUT_CLASS, "R.layout");
+			put(PACKAGE_NAME, "package");
+			put(LAYOUT_DIRECTORY, "layout");
+			put(STRINGS_XML_FILE, "strings");
+			put(STYLE_XML_FILE, "styles");
+			put(MANIFEST_XML_FILE, "manifest");
+			put(OUTPUT_FILE, "output");
+			put(SOURCEPATH, "sourcepath");
+			put(CLASSPATH, "classpath");
 		}
 	};
 	
@@ -73,11 +87,15 @@ public class Properties {
 			Integer propertyKey = e.getKey();
 			Predicate<File> predicate = e.getValue();
 			File result = findFile(project, predicate);
-			properties.put(propertyKey, result.getAbsolutePath());
+			if (result == null) {
+				properties.put(propertyKey, "");
+			} else {
+				properties.put(propertyKey, result.getAbsolutePath());
+			}
 		}
 		return properties;
 	}
-	
+
 	private static File findFile(File path, Predicate<File> pred) {
 		for (File child : path.listFiles()) {
 			if (pred.test(child)) {
@@ -92,22 +110,22 @@ public class Properties {
 		}
 		return null;
 	}
-	
+
 	private static class ManifestHandler extends DefaultHandler {
-		
+
 		private static final String MANIFEST_QNAME = "manifest";
 		private static final String ACTIVITY_QNAME = "activity";
 		private static final String INTENT_FILTER_QNAME = "intent-filter";
 		private static final String ACTION_QNAME = "action";
 		private static final String CATEGORY_QNAME = "category";
-		
+
 		private boolean inActivity;
 		private String activityName;
-		
+
 		private boolean inIntentFilter;
 		private boolean intentFilterIsActionMain;
 		private boolean intentFilterIsCategoryLauncher;
-		
+
 		private String packageName;
 		private String entryActivityName;
 
@@ -148,7 +166,7 @@ public class Properties {
 				inIntentFilter = false;
 			}
 		}
-		
+
 		private void setActivityName(String android_name) {
 			if (android_name.contains(packageName)) {
 				activityName = android_name;
@@ -167,13 +185,13 @@ public class Properties {
 		public String getEntryActivityName() {
 			return entryActivityName;
 		}
-		
+
 	}
 
 	private static Map<Integer, String> inferFromManifest(String manifestPath) {
 		File manifest = new File(manifestPath);
 		ManifestHandler manifestHandler = new ManifestHandler();
-		
+
 		try {
 			SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
 			saxParser.parse(manifest, manifestHandler);
@@ -184,7 +202,7 @@ public class Properties {
 		} catch (IOException e) {
 			// do nothing
 		}
-		
+
 		Map<Integer, String> properties = new HashMap<>();
 		String entryActivityName = manifestHandler.getEntryActivityName();
 		String packageName = manifestHandler.getPackageName();
@@ -194,7 +212,36 @@ public class Properties {
 		properties.put(R_LAYOUT_CLASS, packageName + ".R$layout");
 		return properties;
 	}
-	
+
+	public static void toFile(TestSubject testSubject, File dest) {
+		PrintWriter writer;
+		try {
+			writer = new PrintWriter(dest);
+			writer.printf("app.name=%s\n", testSubject.getName());
+			writer.printf("app.path=%s\n", testSubject.getSourcePath());
+			
+			Map<Integer, String> properties = testSubject.getProperties();
+			for (Entry<Integer, String> e : outputKeys.entrySet()) {
+				int key = e.getKey();
+				String keyString = e.getValue();
+				String value;
+				if (key == OUTPUT_FILE) {
+					value = "/tmp/navy_output.txt";
+				} else {
+					value = properties.get(key);
+					if (value == null) {
+						value = "null";
+					}
+				}
+				writer.printf("%s=%s\n", keyString, value);
+			}
+			
+			writer.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static void main(String[] args) {
 		Map<Integer, String> properties = infer("/home/william/projects/GreenDroid2/testSubjects/AndTweet-bad");
 		for (String p : properties.values()) {

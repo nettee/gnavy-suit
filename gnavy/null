@@ -1,0 +1,32 @@
+@@tracelen=28
+com.xorcode.andtweet.TweetListActivity@43185@onCreate -->
+com.xorcode.andtweet.AndTweetService@44221@onCreate() -->
+acquire wake lock #1 -->
+com.xorcode.andtweet.AndTweetService@44221@onStartCommand() -->
+com.xorcode.andtweet.TweetListActivity@43185@onStart -->
+com.xorcode.andtweet.TweetListActivity@43185@onResume -->
+com.xorcode.andtweet.TweetListActivity@43185  Action: @homeBtn activity switch -->
+com.xorcode.andtweet.TweetListActivity@43185@onPause -->
+com.xorcode.andtweet.TweetListActivity@43185@onStop -->
+com.xorcode.andtweet.TweetListActivity@43185@onRestart -->
+com.xorcode.andtweet.TweetListActivity@43185@onStart -->
+com.xorcode.andtweet.TweetListActivity@43185@onResume -->
+com.xorcode.andtweet.TweetListActivity@43185  Action: @homeBtn activity switch -->
+com.xorcode.andtweet.TweetListActivity@43185@onPause -->
+com.xorcode.andtweet.TweetListActivity@43185@onStop -->
+com.xorcode.andtweet.TweetListActivity@43185@onRestart -->
+com.xorcode.andtweet.TweetListActivity@43185@onStart -->
+com.xorcode.andtweet.TweetListActivity@43185@onResume -->
+com.xorcode.andtweet.TweetListActivity@43185  Action: @menuBtn -->
+com.xorcode.andtweet.TweetListActivity@43185  Action: @menuBtn -->
+com.xorcode.andtweet.TweetListActivity@43185  Action: @backBtn -->
+com.xorcode.andtweet.TweetListActivity@43185@onPause -->
+com.xorcode.andtweet.TweetListActivity@43185@onStop -->
+com.xorcode.andtweet.TweetListActivity@43185@onDestroy -->
+finish all activities -->
+@@@ wake lock #1 not released: WakeLock(AndTweetService) -->
+finish all services -->
+com.xorcode.andtweet.AndTweetService@44221@onDestory() -->
+release wake lock #1
+-----------------------------
+
